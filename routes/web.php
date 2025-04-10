@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\CustomerController;
 
 Route::get('/', function () {
     // return view('welcome');
@@ -51,3 +52,9 @@ Route::get('/produk/all', [ProdukController::class, 'produkAll'])->name('produk.
 
 // Route::resource('user', UserController::class);
 // Route::resource('user', UserController::class, ['as' => 'backend']);
+
+//API Google
+Route::get('/auth/redirect', [CustomerController::class, 'redirect'])->name('auth.redirect');
+Route::get('/auth/google/callback', [CustomerController::class, 'callback'])->name('auth.callback');
+// Logout
+Route::post('/logout', [CustomerController::class, 'logout'])->name('logout');

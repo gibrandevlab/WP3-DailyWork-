@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
@@ -23,7 +22,7 @@ class CustomerController extends Controller
     {
         try {
             $socialUser = Socialite::driver('google')->user();
-            
+
             // Cek apakah email sudah terdaftar
             $registeredUser = User::where('email', $socialUser->email)->first();
 
@@ -48,38 +47,24 @@ class CustomerController extends Controller
                 // Login pengguna baru
                 Auth::login($user);
             } else {
-                // Jika email sudah terdaftar, update google_id dan token
-                $customer = Customer::where('user_id', $registeredUser->id)->first();
-                if ($customer) {
-                    $customer->update([
-                        'google_id' => $socialUser->id,
-                        'google_token' => $socialUser->token
-                    ]);
-                } else {
-                    Customer::create([
-                        'user_id' => $registeredUser->id,
-                        'google_id' => $socialUser->id,
-                        'google_token' => $socialUser->token
-                    ]);
-                }
-                
-                // Login pengguna yang sudah ada
+                // Jika email sudah terdaftar, langsung login
                 Auth::login($registeredUser);
             }
 
             // Redirect ke halaman utama
             return redirect()->intended('beranda');
         } catch (\Exception $e) {
-            Log::error('Google login error: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Terjadi kesalahan saat login dengan Google: ' . $e->getMessage());
+            // Redirect ke halaman utama jika terjadi kesalahan
+            return redirect('/')->with('error', 'Terjadi kesalahan saat login dengan Google.');
         }
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        Auth::logout(); // Logout pengguna
+        $request->session()->invalidate(); // Hapus session
+        $request->session()->regenerateToken(); // Regenerate token CSRF
+
         return redirect('/')->with('success', 'Anda telah berhasil logout.');
     }
 }
